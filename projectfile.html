@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dictionary App</title>
+  <link rel="stylesheet" href="test.css">
+</head>
+<style>#game_screen{
+    font-size: 30px;
+    background-color: black;
+color: whitesmoke;
+    position: absolute;
+    right:200px;
+    top: 100px;
+    width: 500px;
+    height: 500px;
+    overflow: scroll;
+
+}
+#input_area{
+    font-size: larger;
+    border-radius: 30px;
+    background-color: aquamarine;position: absolute;
+    right: 400px;
+    top: 650px;
+    width: 250px;
+    height: 60px;
+}
+#hint{
+    border-radius: 30px;
+    background-color: orange;
+    font-size: medium;
+    width: 100px;
+    height: 50px;position: absolute;
+    top:680px;
+    cursor: pointer;
+}
+#show_word{
+    border: solid;
+    width: 300px;
+    height: 50px;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 30px;
+border-radius: 25px;    position: absolute;
+top: 5px;
+right:350px;
+
+
+}
+#display_meaning{
+    border: solid 5px;
+    width: 600px;
+    height: 600px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;position: absolute;
+    background-color: #5ae1d2;
+}
+#boss{
+    position: relative;
+}
+#button{
+    font-size: larger;
+    border-radius: 30px;
+    background-color: rgb(148, 255, 127);position: absolute;
+    right: 280px;
+    top: 650px;
+    width: 100px;
+    height: 50px;
+    cursor: pointer;
+}
+img{
+    position: absolute;
+    left: 610px;
+    top: 200px;
+    width: 200px;
+}
+*{
+    background-color: rgb(42, 202, 199);
+}</style>
+<body>
+  <div id="boss">
+  <h1>Welcome to my hangman game</h1>
+  <div id="display_meaning"></div>
+  <button onclick="take() " id="hint">Hint</button>
+  <center><p id="show_word">
+
+  </p>
+  </center>
+<img src="https://cdn-icons-png.flaticon.com/512/43/43980.png" alt="hangman">
+  <center><div id="game_screen"></div>
+  <input type="text" id="input_area" placeholder="Provide me guessed letter">
+  <button type="button" id="button" onclick="add()">Submit</button>
+  </center>
+  </div>
+  <script>// Wrap your code inside DOMContentLoaded to ensure the DOM is fully loaded
+
+    var display = document.getElementById("display_meaning");
+    var count = 10;
+    let show_word = document.getElementById("show_word");
+    let output = document.getElementById("game_screen");
+    
+    const mylist = [
+      "apple", "banana", "cherry", "delta", "elephant", "falcon", "giraffe", "honey", "iguana", "jazz", "kiwi", "lemon", "mango",
+      "novel", "orange", "penguin", "quasar", "rhythm", "sunset", "tiger", "umbrella", "velvet", "whale", "xylophone", "yellow", "zeppelin",
+      "ant", "bear", "cat", "dog", "elephant", "fox", "giraffe", "hippo", "iguana", "jaguar", "koala", "lion", "monkey", "newt",
+      "octopus", "penguin", "quokka", "rabbit", "squirrel", "tiger", "umbrella", "vulture", "wombat", "x-ray", "yak", "zebra",
+      "astronomy", "biology", "chemistry", "dance", "elephant", "forest", "geology", "history", "insect", "jazz", "koala", "language", "math",
+      "nebula", "ocean", "piano", "quantum", "robot", "space", "technology", "umbrella", "volcano", "weather", "xylophone", "yellow", "zeppelin",
+      "architecture", "ballet", "calculus", "design", "elephant", "film", "geometry", "history", "innovation", "jazz", "knowledge", "language", "music",
+      "novel", "oceanography", "physics", "quantum", "robotics", "symphony", "technology", "umbrella", "vision", "windmill", "xylophone", "yellow", "zeppelin",
+    ];
+    var word= mylist[Math.floor(Math.random() * mylist.length)];
+    let length = word.length;
+    let array = Array(length).fill('_');
+    
+    function take() {
+      if(count>3)
+      {
+        alert("Sorry ! you can just use the hint when you have less than 3 attempt left");
+        return;
+      }
+      if(display.textContent==''){
+      let url = `https://api.dictionaryapi.dev/api/v2/entries/en/${word}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          // Check if 'meanings' property exists in the API response
+          if (data && data[0] && data[0].meanings) {
+            console.log(JSON.stringify(data[0].meanings, null, 2));
+    
+            function extractDefinitions(data) {
+              var definitionsList = [];
+    
+              // Iterate through each entry in the data
+              data.forEach(entry => {
+                // Check if 'definitions' property exists for the current entry
+                if (entry.definitions) {
+                  // Iterate through definitions and add to the list
+                  entry.definitions.forEach(definition => {
+                    if (definition.definition) {
+                      definitionsList.push(definition.definition);
+                    }
+                  });
+                }
+              });
+    
+              return definitionsList;
+            }
+            function extractSynonymsAntonyms(data) {
+                var synonymsList = [];
+                var antonymsList = [];
+    
+                // Iterate through each entry in the data
+                data.forEach(entry => {
+                  // Check if 'synonyms' and 'antonyms' properties exist for the current entry
+                  if (entry.synonyms) {
+                    synonymsList = synonymsList.concat(entry.synonyms);
+                  }
+    
+                  if (entry.antonyms) {
+                    antonymsList = antonymsList.concat(entry.antonyms);
+                  }
+                });
+    
+                return { synonyms: synonymsList, antonyms: antonymsList };
+              }
+    
+              let { synonyms, antonyms } = extractSynonymsAntonyms(data[0].meanings);
+                       
+    
+            let list = extractDefinitions(data[0].meanings);
+            console.log(list);
+            for(let x=0;x<5;x++)
+            {
+                display.innerHTML += "Definition:" + list[x] + "<br>";
+            } 
+            for(let x=0;x<5;x++)
+            {
+                display.innerHTML += "Synonyms:" + synonyms[x] + "<br>";
+            }
+            for(let x=0;x<5;x++)
+            {
+                display.innerHTML += "Antonyms:" + antonyms[x] + "<br>";
+            }
+            
+            
+            // Displaying definitions as a comma-separated string
+          } else {
+            console.error("Error: Invalid API response format");
+          }
+        })
+        .catch(error => console.log("Sorry! An error has occurred", error));
+    }}
+    
+    function add() {
+        var order=0;
+        show_word.innerHTML = '';
+        let letter = document.getElementById("input_area").value;
+        if (letter.trim().length != 1) {
+            alert( "Please provide a single letter");
+        }
+        document.getElementById("input_area").value = '';
+    
+        if (array.join('') === word) {
+            output.textContent = "Congratulations! You won the game";
+            return;
+        }
+        if (letter.trim().length == 1) {
+        for (let i = 0; i < length; i++) {
+    
+            if (letter === word[i]) {
+              if(array[i]==letter)
+              {
+                output.innerHTML += "Sorry! The letter has been chosed already " + "<br>";
+                break;
+              }
+                order=1;
+                output.innerHTML += "Congratulations! You got a letter " + "<br>";
+                array[i] = word[i];
+              for(let q=0;q<length;q++)
+              {
+                if (letter === word[q]) {
+                  output.innerHTML += "Congratulations! You got a letter " + "<br>";
+                  array[q] = word[q];
+                }
+                if (q== length - 1) {
+                    for (let m = 0; m < length; m++) {
+                        show_word.innerHTML += array[m];
+                    }
+                }
+              
+            }
+    
+                if (array.join('') === word) {
+                    output.innerHTML= "Congratulations! You won the game in " + count + "Attempts" + "<br>" ;
+                    alert("Congratulations you won! Now time for new round");
+                    replay();
+                }
+               return;
+            }
+             else {
+                if(order!=1){
+                if (i === length - 1) {
+                    output.innerHTML += "Sorry! You chose the wrong letter" + "<br>" + "Attempt left:" + count + "<br>" ;
+                    count=count-1;
+    
+                    if (i === length - 1) {
+                        for (let m = 0; m < length; m++) {
+                            show_word.innerHTML += array[m];
+                        }
+                    }
+                }
+    
+                if (count ==0) {
+                    output.innerHTML += "Sorry! You lost the round" + "<br>";
+                    alert("The word was " + word);
+                    alert("Sorry! You lost: Now time for new round");
+                    replay();
+                }
+            }
+        }
+        }
+    }
+    }
+    function replay(){
+       word= mylist[Math.floor(Math.random() * mylist.length)];
+     length = word.length;
+    
+    array = Array(length).fill('_');
+    count=10;
+    output.textContent='';
+    display.textContent='';
+    }</script>
+</body>
+</html>
